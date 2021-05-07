@@ -3,7 +3,7 @@
 ## Getting Started
 
 ### API Key
-Obtain a free API key from [Nomics](https://p.nomics.com/cryptocurrency-bitcoin-api) and place it on line 57 of `index.php`.
+Obtain a free API key from [Nomics](https://p.nomics.com/cryptocurrency-bitcoin-api) and place it on line 57 of `index.php`. The Nomics API provides a great service with a competitive 1 second rate limit.  
 
 ```php
 $api_key = [
