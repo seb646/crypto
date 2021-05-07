@@ -6,6 +6,10 @@
 | Version: 1.0.0
 | GitHub: github.com/seb646/crypto
 |
+|---------------------------------------------------------------
+|
+| BSD 3-Clause License
+|
 | Copyright (c) 2021, Sebastian Rodriguez. All rights reserved.
 | 
 | Redistribution and use in source and binary forms, with or 
@@ -468,7 +472,7 @@ function bd_nice_number($n) {
                   <div class="px-4 py-5 sm:px-6">
                     <ul class="fa-ul text-sm text-gray-800" style="margin-left: 25px;">
                       <li class="mb-3"><span class="fa-li"><i class="fab fa-github fa-fw text-xl text-gray-500"></i></span>&nbsp; <a target="_blank"href="https://github.com/seb646/crypto">seb646/crypto</a></li>
-                      <li><span class="fa-li"><i class="fas fa-shield-alt fa-fw text-xl text-gray-500"></i></span>&nbsp; <a target="_blank" href="https://github.com/seb646/crypto/blob/main/LICENSE">BSD-3-Clause License</a></li>
+                      <li><span class="fa-li"><i class="fas fa-shield-alt fa-fw text-xl text-gray-500"></i></span>&nbsp; <a target="_blank" href="https://github.com/seb646/crypto/blob/main/LICENSE">BSD 3-Clause License</a></li>
                     </ul>
                   </div>
               </div>
