@@ -6,10 +6,6 @@
 | Version: 1.0.0
 | GitHub: github.com/seb646/crypto
 |
-|---------------------------------------------------------------
-|
-| BSD 3-Clause License
-|
 | Copyright (c) 2021, Sebastian Rodriguez. All rights reserved.
 | 
 | Redistribution and use in source and binary forms, with or 
@@ -164,16 +160,8 @@ foreach($response as $c){
     // Set the history stats
     $timeline = [];
     foreach($c as $key => $value){
-        if($key == '1h'){
-            $timeline['1h'] = $value->price_change_pct*100;
-        }elseif($key == '1d'){
+        if($key == '1d'){
             $timeline['1d'] = $value->price_change_pct*100;
-        }elseif($key == '7d'){
-            $timeline['7d'] = $value->price_change_pct*100;
-        }elseif($key == '30d'){
-            $timeline['30d'] = $value->price_change_pct*100;
-        }elseif($key == '365d'){
-            $timeline['365d'] = $value->price_change_pct*100;
         }
     }
     
@@ -183,12 +171,9 @@ foreach($response as $c){
         'ticker' => $c->symbol,
         'price' => $c->price,
         'logo' => $c->logo_url,
-        'percent_change_1h' => $timeline['1h'],
         'percent_change_24h' => $timeline['1d'],
-        'percent_change_7d' => $timeline['7d'],
-        'percent_change_30d' => $timeline['30d'],
-        'percent_change_365d' => $timeline['365d'],
         'market_cap' => $c->market_cap,
+        'circulation' => $c->circulating_supply,
     ];
 }
 
@@ -209,7 +194,7 @@ $url_endpoint = $url.$endpoint;
 
 // Set the time variable for the past 24hrs and format
 date_default_timezone_set('America/New_York');
-$date = (new \DateTime())->modify('-24 hours');
+$date = (new \DateTime())->modify('-1 month');
 $date = $date->format(\DateTime::RFC3339);
 
 // Set the parameters for the API ticker endpoint
@@ -445,7 +430,6 @@ function bd_nice_number($n) {
                     <?php }else{?>
                         <div class="py-20">
                             <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
-                              <!-- Heroicon name: outline/check -->
                               <svg class="h-6 w-6  text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                               </svg>
@@ -498,13 +482,22 @@ function bd_nice_number($n) {
         <?php foreach($crypto as $c){
         $value = $c['price'] * $assets[$c['ticker']]['coins'];
         $crypto_value[$c['ticker']] = $value;?>
-        <div class="border border-gray-200 rounded-lg shadow-sm divide-y divide-gray-200 bg-white">
+        <div class="space-y-4">
+        <div class="border border-gray-200 rounded-lg shadow-sm bg-white overflow-hidden" style="height:fit-content">
           <div class="p-6">
-            <a target="_blank" href="<?php echo 'https://coinmarketcap.com/currencies/'.str_replace(' ', '-', strtolower($c['name']));?>">
-                <div style="height: 23px;width: 23px;float: left;margin: auto;background-size:100% 100%;border-radius:90px;background-position: center;margin-right: 10px;background-image:url(<?php echo $c['logo'];?>);"></div>
-                <h2 class="text-lg leading-6 font-medium text-gray-900"><?php echo $c['name'];?> <span class="text-gray-500 text-sm">(<?php echo $c['ticker'];?>/USD)</span></h2>
-            </a>
-            <div class="mt-3 mb-2 flex justify-between items-baseline md:block lg:flex">
+            <div class="grid grid-cols-3">
+                <div class="col-span-2">
+                    <a target="_blank" href="<?php echo 'https://coinmarketcap.com/currencies/'.str_replace(' ', '-', strtolower($c['name']));?>">
+                    <div style="height: 30px;width: 30px;float: left;margin: auto;background-size:100% 100%;border-radius:90px;background-position: center;margin-right: 10px;margin-top:5px;background-image:url(<?php echo $c['logo'];?>);"></div>
+                    <h2 class="block text-lg leading-6 font-medium text-gray-900"><?php echo $c['name'];?> <br><span class="text-gray-500 text-sm"><?php echo $c['ticker'];?>/USD</span></h2>
+                    </a>
+                </div>
+                <div>
+                    <div class="text-sm font-medium text-gray-500 text-right">Market Cap</div>
+                    <div class="text-sm text-gray-600 text-right">$<?php echo bd_nice_number($c['market_cap']);?></div>
+                </div>
+            </div>
+            <div class="mt-6 mb-2 flex justify-between items-baseline md:block lg:flex">
               <div class="flex items-baseline text-3xl font-extrabold text-gray-900">$<?php 
               if($c['price'] >= 1000){
                 echo number_format($c['price'], 3, '.', ',');
@@ -536,7 +529,6 @@ function bd_nice_number($n) {
                 </div>
                 <?php }?>
             </div>
-            <canvas id="<?php echo $c['ticker'];?>"></canvas>
             <div class="relative">
                 <div class="mt-4 overflow-hidden h-2 mb-1 text-xs flex rounded bg-gray-200">
                     <div style="width:<?php echo (($c['price']-$crypto_high_low[$c['ticker']]['low'])/($crypto_high_low[$c['ticker']]['high']-$crypto_high_low[$c['ticker']]['low'])*100);?>%" class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-gray-500"></div>
@@ -566,185 +558,45 @@ function bd_nice_number($n) {
                 </div>
               </div>
             </div>
-          </div>
-          <dl class="sm:divide-y sm:divide-gray-200">
-            <div class="py-4 px-6 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-            <dt class="text-sm font-medium text-gray-500">
-              Market Cap
-            </dt>
-            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-              $<?php echo bd_nice_number($c['market_cap']);?>
-            </dd>
-            </div>
-          </dl>
-          <dl class="sm:divide-y sm:divide-gray-200">
-            <div class="py-4 px-6 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-            <dt class="text-sm font-medium text-gray-500">
-              % Change
-            </dt>
-            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-               <?php if($c['percent_change_1h'] > 0){?>
-              <div class="flex block  items-baseline py-0.5 rounded-full text-sm font-medium text-green-800 md:mt-2 lg:mt-0">
-                  <svg class="-ml-1 mr-0.5 flex-shrink-0 self-center h-5 w-5 text-green-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                    <path fill-rule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clip-rule="evenodd" />
-                  </svg>
-                  <span class="sr-only">
-                    Increased by
-                  </span>
-                  <?php echo round($c['percent_change_1h'],4);?>% (1h)
-                </div>
-                <?php }else{?>
-                <div class="flex block items-baseline py-0.5 rounded-full text-sm font-medium text-red-800 md:mt-2 lg:mt-0">
-                  <svg class="-ml-1 mr-0.5 flex-shrink-0 self-center h-5 w-5 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                    <path fill-rule="evenodd" d="M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 012 0v7.586l2.293-2.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-                  </svg>
-                  <span class="sr-only">
-                    Decreased by
-                  </span>
-                  <?php echo round($c['percent_change_1h'],4);?>% (1h)
-                </div>
-                <?php }?>
-                
-                <span class="block m-1"></span>
-                
-                <?php if($c['percent_change_24h'] > 0){?>
-              <div class="flex block  items-baseline py-0.5 rounded-full text-sm font-medium text-green-800 md:mt-2 lg:mt-0">
-                  <svg class="-ml-1 mr-0.5 flex-shrink-0 self-center h-5 w-5 text-green-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                    <path fill-rule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clip-rule="evenodd" />
-                  </svg>
-                  <span class="sr-only">
-                    Increased by
-                  </span>
-                  <?php echo round($c['percent_change_24h'],4);?>% (24h)
-                </div>
-                <?php }else{?>
-                <div class="flex block items-baseline py-0.5 rounded-full text-sm font-medium text-red-800 md:mt-2 lg:mt-0">
-                  <svg class="-ml-1 mr-0.5 flex-shrink-0 self-center h-5 w-5 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                    <path fill-rule="evenodd" d="M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 012 0v7.586l2.293-2.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-                  </svg>
-                  <span class="sr-only">
-                    Decreased by
-                  </span>
-                  <?php echo round($c['percent_change_24h'],4);?>% (24h)
-                </div>
-                <?php }?>
-                
-                <span class="block m-1"></span>
-                
-                <?php if($c['percent_change_7d'] > 0){?>
-              <div class="flex block  items-baseline py-0.5 rounded-full text-sm font-medium text-green-800 md:mt-2 lg:mt-0">
-                  <svg class="-ml-1 mr-0.5 flex-shrink-0 self-center h-5 w-5 text-green-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                    <path fill-rule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clip-rule="evenodd" />
-                  </svg>
-                  <span class="sr-only">
-                    Increased by
-                  </span>
-                  <?php echo round($c['percent_change_7d'],4);?>% (7d)
-                </div>
-                <?php }else{?>
-                <div class="flex block items-baseline py-0.5 rounded-full text-sm font-medium text-red-800 md:mt-2 lg:mt-0">
-                  <svg class="-ml-1 mr-0.5 flex-shrink-0 self-center h-5 w-5 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                    <path fill-rule="evenodd" d="M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 012 0v7.586l2.293-2.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-                  </svg>
-                  <span class="sr-only">
-                    Decreased by
-                  </span>
-                  <?php echo round($c['percent_change_7d'],4);?>% (7d)
-                </div>
-                <?php }?>
-                
-                <span class="block m-1"></span>
-                
-                <?php if($c['percent_change_30d'] > 0){?>
-              <div class="flex block  items-baseline py-0.5 rounded-full text-sm font-medium text-green-800 md:mt-2 lg:mt-0">
-                  <svg class="-ml-1 mr-0.5 flex-shrink-0 self-center h-5 w-5 text-green-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                    <path fill-rule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clip-rule="evenodd" />
-                  </svg>
-                  <span class="sr-only">
-                    Increased by
-                  </span>
-                  <?php echo round($c['percent_change_30d'],4);?>% (30d)
-                </div>
-                <?php }else{?>
-                <div class="flex block items-baseline py-0.5 rounded-full text-sm font-medium text-red-800 md:mt-2 lg:mt-0">
-                  <svg class="-ml-1 mr-0.5 flex-shrink-0 self-center h-5 w-5 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                    <path fill-rule="evenodd" d="M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 012 0v7.586l2.293-2.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-                  </svg>
-                  <span class="sr-only">
-                    Decreased by
-                  </span>
-                  <?php echo round($c['percent_change_30d'],4);?>% (30d)
-                </div>
-                <?php }?>
-                
-                <span class="block m-1"></span>
-                
-                <?php if($c['percent_change_365d'] > 0){?>
-              <div class="flex block  items-baseline py-0.5 rounded-full text-sm font-medium text-green-800 md:mt-2 lg:mt-0">
-                  <svg class="-ml-1 mr-0.5 flex-shrink-0 self-center h-5 w-5 text-green-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                    <path fill-rule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clip-rule="evenodd" />
-                  </svg>
-                  <span class="sr-only">
-                    Increased by
-                  </span>
-                  <?php echo round($c['percent_change_365d'],4);?>% (365d)
-                </div>
-                <?php }else{?>
-                <div class="flex block items-baseline py-0.5 rounded-full text-sm font-medium text-red-800 md:mt-2 lg:mt-0">
-                  <svg class="-ml-1 mr-0.5 flex-shrink-0 self-center h-5 w-5 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                    <path fill-rule="evenodd" d="M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 012 0v7.586l2.293-2.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-                  </svg>
-                  <span class="sr-only">
-                    Decreased by
-                  </span>
-                  <?php echo round($c['percent_change_365d'],4);?>% (365d)
-                </div>
-                <?php }?>
-                
-            </dd>
-            </div>
-          </dl>
-          <dl class="sm:divide-y sm:divide-gray-200">
-            <div class="py-4 px-6 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-            <dt class="text-sm font-medium text-gray-500">
-              Your Coins
-            </dt>
-            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-              <?php if($assets[$c['ticker']]['coins']){ echo $assets[$c['ticker']]['coins']; }else{ echo '0'; }?>
-            </dd>
-            </div>
-          </dl>
-          <dl class="sm:divide-y sm:divide-gray-200">
-            <div class="py-4 px-6 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-            <dt class="text-sm font-medium text-gray-500">
-              Coin Value
-            </dt>
-            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-              $<?php echo number_format($value, 2, '.', ',');?>
-            </dd>
-            </div>
-          </dl>
-          <dl class="sm:divide-y sm:divide-gray-200">
-            <div class="py-4 px-6 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-            <dt class="text-sm font-medium text-gray-500">
-              Invested
-            </dt>
-            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-              $<?php if($assets[$c['ticker']]['invested']){ echo number_format($assets[$c['ticker']]['invested'], 2, '.', ','); }else{ echo '0'; }?>
-            </dd>
-            </div>
-          </dl>
-          <dl class="sm:divide-y sm:divide-gray-200">
-            <div class="py-4 px-6 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-            <dt class="text-sm font-medium text-gray-500">
-              Gain/Loss
-            </dt>
-            <dd class="mt-1 text-sm text-gray-700 sm:mt-0 sm:col-span-2">
-              <?php 
+        <?php if($assets[$c['ticker']]['coins'] > 0){?>
+        <dt class="text-sm font-medium text-gray-500 mt-5">
+          Your Coins
+        </dt>
+        <dd class="mt-1 text-sm text-gray-900">
+          <ul class="border border-gray-200 rounded-md divide-y divide-gray-200">
+            <li class="pl-3 pr-4 py-3 flex items-center justify-between text-sm">
+              <div class="w-0 flex-1 flex items-center">
+                <i class="fas fa-coins text-gray-400"></i>
+                <span class="ml-2 flex-1 w-0 truncate">
+                  <?php if($assets[$c['ticker']]['coins']){ echo $assets[$c['ticker']]['coins']; }else{ echo '0'; }?> <?php echo $c['ticker'];?>
+                </span>
+              </div>
+              <div class="ml-4 flex-shrink-0">
+                <span href="#" class="font-medium text-gray-600">
+                  $<?php echo number_format($value, 2, '.', ',');?>
+                </span>
+              </div>
+            </li>
+          </ul>
+        </dd>
+        <dt class="text-sm font-medium text-gray-500 mt-4">
+            Your Investment
+        </dt>
+        <dd class="mt-1 text-sm text-gray-900">
+          <ul class="border border-gray-200 rounded-md divide-y divide-gray-200">
+            <li class="pl-3 pr-4 py-3 flex items-center justify-between text-sm">
+              <div class="w-0 flex-1 flex items-center">
+                <i class="fas fa-money-bill-wave text-gray-400"></i>
+                <span class="ml-2 flex-1 w-0 truncate">
+                  $<?php if($assets[$c['ticker']]['invested']){ echo number_format($assets[$c['ticker']]['invested'], 2, '.', ','); }else{ echo '0'; }?> USD
+                </span>
+              </div>
+              <div class="ml-4 flex-shrink-0">
+                  <?php 
                 $net = $value - $assets[$c['ticker']]['invested'];
                 $net = number_format($net, 2, '.', ',');
                 if($net > 0){?>
-              <div class="flex block  items-baseline py-0.5 rounded-full text-sm font-medium text-green-800 md:mt-2 lg:mt-0">
+              <div class="flex block items-baseline py-0.5 rounded-full text-sm font-medium text-green-800 md:mt-2 lg:mt-0">
                   <svg class="-ml-1 mr-0.5 flex-shrink-0 self-center h-5 w-5 text-green-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                     <path fill-rule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clip-rule="evenodd" />
                   </svg>
@@ -765,7 +617,6 @@ function bd_nice_number($n) {
                 </div>
                 <?php }else{?>
                 <div class="flex block items-baseline py-0.5 rounded-full text-sm font-medium text-gray-500 md:mt-2 lg:mt-0">
-                  <!-- Heroicon name: solid/arrow-sm-down -->
                   <svg class="-ml-1 mr-0.5 flex-shrink-0 self-center h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 12H6" />
                     </svg>
@@ -775,11 +626,17 @@ function bd_nice_number($n) {
                   $<?php echo abs($net);?>
                 </div>
                 <?php }?>
- 
-            </div>
-          </dl>
-
+              </div>
+            </li>
+          </ul>
+          <?php }?>
         </div>
+    <div style="margin-left: -8px;width: 103%;margin-bottom: -8px;">
+                <canvas id="<?php echo $c['ticker'];?>"></canvas>
+            </div>
+  </div>
+</div>
+
         <?php }?>
 
       </div>
@@ -789,7 +646,6 @@ function bd_nice_number($n) {
         <div class="inline-block align-bottom rounded-lg px-6 py-10 text-left overflow-hidden sm:my-8 sm:align-middle sm:max-w-sm sm:w-full">
       <div>
         <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
-          <!-- Heroicon name: outline/check -->
           <svg class="h-6 w-6  text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
           </svg>
@@ -826,6 +682,7 @@ var chart = new Chart(ctx, {
         ],
         datasets: [{
             label: 'USD',
+            fill: true,
             data: [
                 <?php 
                 foreach($value['prices'] as $price){ 
@@ -833,24 +690,42 @@ var chart = new Chart(ctx, {
                 }?>
             ],
             backgroundColor: [
-                'rgba(104, 211, 145, .2)',
+                'rgb(209 250 228)',
             ],
             borderColor: [
-                'rgb(156 163 175)',
+                'rgb(18 185 129)',
             ],
-            borderWidth: 3
+            borderWidth: 3,
+            tension: 0.4
         }]
     },
     options: {
+        responsive: true,
         plugins: {
             legend: {
                 display: false
+            },
+            tooltip: {
+                displayColors: false
             }
         },
         scales: {
             x: {
                 ticks: {
                     display: false
+                },
+                grid: {
+                    display: false,
+                    drawBorder: false,
+                }
+            },
+            y: {
+                ticks: {
+                    display: false
+                },
+                grid: {
+                    display: false,
+                    drawBorder: false,
                 }
             }
         },
@@ -895,6 +770,9 @@ var chart = new Chart(ctx, {
         plugins: {
             legend: {
                 display: false
+            },
+            tooltip: {
+                displayColors: false,
             }
         }
     }
