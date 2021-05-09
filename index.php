@@ -57,6 +57,9 @@ $api_key = [
     'key' => 'YOUR_KEY_HERE',
 ];
 
+// Set the currency conversion (crypto or fiat). Fiat examples: USD, GBP, EUR, CAD; Crypto examples: USDT, BTC
+$currnecy = 'USD';
+
 // Define your personal crypto assets using currency tickers
 $assets = [
     'BTC' => [
@@ -109,7 +112,7 @@ $parameters = [
     'ids' => $coin_ids,
     
     // Set the currency
-    'convert' => 'USD',
+    'convert' => $currnecy,
     
     // Set the history interval
     'interval' => '1h,1d,7d,30d,365d',
@@ -201,6 +204,9 @@ $date = $date->format(\DateTime::RFC3339);
 $parameters = [
     // Set the coin tickers 
     'ids' => $coin_ids,
+    
+    // Set the currency
+    'convert' => $currnecy,
     
     // Set the state date
     'start' => $date,
@@ -417,7 +423,7 @@ function bd_nice_number($n) {
             <div class="bg-white shadow overflow-hidden rounded-lg">
               <div class="px-6 py-3 border-b border-gray-00 sm:px-6 bg-gray-50 rounded-t-lg">
                 <h3 class="text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Assets by Coin Value (USD)
+                  Assets by Coin Value (<?php echo $currnecy;?>)
                 </h3>
               </div>
               <div class="border-t border-gray-200">
@@ -489,7 +495,7 @@ function bd_nice_number($n) {
                 <div class="col-span-2">
                     <a target="_blank" href="<?php echo 'https://coinmarketcap.com/currencies/'.str_replace(' ', '-', strtolower($c['name']));?>">
                     <div style="height: 30px;width: 30px;float: left;margin: auto;background-size:100% 100%;border-radius:90px;background-position: center;margin-right: 10px;margin-top:5px;background-image:url(<?php echo $c['logo'];?>);"></div>
-                    <h2 class="block text-lg leading-6 font-medium text-gray-900"><?php echo $c['name'];?> <br><span class="text-gray-500 text-sm"><?php echo $c['ticker'];?>/USD</span></h2>
+                    <h2 class="block text-lg leading-6 font-medium text-gray-900"><?php echo $c['name'];?> <br><span class="text-gray-500 text-sm"><?php echo $c['ticker'];?>/<?php echo $currnecy;?></span></h2>
                     </a>
                 </div>
                 <div>
@@ -588,7 +594,7 @@ function bd_nice_number($n) {
               <div class="w-0 flex-1 flex items-center">
                 <i class="fas fa-money-bill-wave text-gray-400"></i>
                 <span class="ml-2 flex-1 w-0 truncate">
-                  $<?php if($assets[$c['ticker']]['invested']){ echo number_format($assets[$c['ticker']]['invested'], 2, '.', ','); }else{ echo '0'; }?> USD
+                  $<?php if($assets[$c['ticker']]['invested']){ echo number_format($assets[$c['ticker']]['invested'], 2, '.', ','); }else{ echo '0'; }?> <?php echo $currnecy;?>
                 </span>
               </div>
               <div class="ml-4 flex-shrink-0">
@@ -681,7 +687,7 @@ var chart = new Chart(ctx, {
             }?>
         ],
         datasets: [{
-            label: 'USD',
+            label: '<?php echo $currnecy;?>',
             fill: true,
             data: [
                 <?php 
